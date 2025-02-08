@@ -44,7 +44,8 @@ This repository provides a comprehensive guide to learning Kubernetes, from fund
   - **Controller Manager**: Ensures that the desired state of the cluster matches the current state. It manages controllers such as the ReplicaSet, Deployment, and Node controllers.
   - **Scheduler**: Assigns newly created pods to nodes based on resource availability and constraints.
   - **etcd**: A distributed key-value store that holds the configuration data and state of the Kubernetes cluster.
-
+  - **Cloud Control Manager**: The Cloud Controller Manager is responsible for managing cloud-specific control logic, enabling Kubernetes to interact with underlying cloud services. It ensures that cloud resources like load balancers, volumes, and networks are managed in the cluster.
+    
 - **Worker Node Components:**
   - **Kubelet**: Ensures that containers are running in the required pods and reports their status to the API server.
   - **Kube Proxy**: Manages network communication and load balancing between services within the cluster.
