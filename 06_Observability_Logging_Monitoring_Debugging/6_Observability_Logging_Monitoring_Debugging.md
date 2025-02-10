@@ -119,14 +119,36 @@ After installation, Prometheus will start scraping metrics from Kubernetes and e
 - **Cluster Resource Usage**: Visualize CPU, memory, and disk usage across nodes and pods.
 - **Pod Metrics**: Track resource usage for individual pods, including metrics like CPU load and memory consumption.
 
-#### Liveness & Readiness Probes
+#### Liveness, Readiness & Startup Probes
 
-Kubernetes provides **probes** to check the health of pods and ensure that traffic is directed only to healthy pods.
+Kubernetes provides **probes** to check the health of pods and ensure that traffic is directed only to properly functioning pods.
 
-- **Liveness Probe**: Determines if a pod is still running. If the probe fails, Kubernetes will restart the pod.
-- **Readiness Probe**: Determines if a pod is ready to receive traffic. If it fails, Kubernetes will stop sending traffic to the pod.
+- **Liveness Probe**:
 
-**Example: Liveness & Readiness Probes**
+  - Determines if a pod is still running and responsive.
+  - If the probe fails, Kubernetes restarts the pod.
+  - Useful for detecting deadlocks where the application is running but unable to proceed.
+
+- **Readiness Probe**:
+
+  - Determines if a pod is ready to accept traffic.
+  - If the probe fails, Kubernetes removes the pod from the service's load balancer until it recovers.
+  - Useful when an application needs time to initialize before serving requests.
+
+- **Startup Probe**:
+  - Used to check if a container has started successfully.
+  - It is useful for applications that take a long time to initialize.
+  - If a startup probe is configured, Kubernetes will disable the **liveness probe** until the startup probe succeeds.
+
+These probes can be implemented using:
+
+- **HTTP Probes**: Kubernetes makes an HTTP GET request to a specified endpoint in the container.
+- **TCP Probes**: Kubernetes attempts to establish a TCP connection to the container.
+- **Command Probes**: Kubernetes runs a specified command inside the container and checks its exit status.
+
+This ensures that pods remain healthy and can efficiently handle incoming traffic.
+
+**Example: Liveness, Readiness and Startup Probes**
 
 ```yaml
 apiVersion: v1
@@ -137,6 +159,13 @@ spec:
   containers:
     - name: my-app-container
       image: my-app:latest
+      startupProbe:
+        httpGet:
+          path: /startup
+          port: 8080
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        failureThreshold: 10
       livenessProbe:
         httpGet:
           path: /healthz
@@ -151,10 +180,27 @@ spec:
         periodSeconds: 10
 ```
 
-In this example:
+### Explanation:
 
-- The **liveness probe** checks the `/healthz` endpoint on port 8080 to determine if the container is running.
-- The **readiness probe** checks the `/readiness` endpoint on port 8080 to determine if the container is ready to serve traffic.
+- **Startup Probe**:
+
+  - Checks the `/startup` endpoint to determine if the application has fully started.
+  - It waits **10 seconds** before the first check and runs every **5 seconds**.
+  - It allows up to **10 failures** before Kubernetes considers the startup failed and restarts the pod.
+  - If configured, the **liveness probe** will not run until the startup probe succeeds.
+
+- **Liveness Probe**:
+
+  - Checks the `/healthz` endpoint every **5 seconds** to ensure the container is still running.
+
+- **Readiness Probe**:
+  - Checks the `/readiness` endpoint every **10 seconds** to ensure the pod is ready to accept traffic.
+
+This configuration ensures that:
+
+1. The container gets enough time to start before being restarted (Startup Probe).
+2. Kubernetes can restart the container if it becomes unresponsive (Liveness Probe).
+3. Traffic is only sent to fully initialized and healthy pods (Readiness Probe).
 
 ### 6.3 Troubleshooting Kubernetes Issues
 

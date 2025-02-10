@@ -94,6 +94,21 @@ The **Master Node** is responsible for managing the Kubernetes cluster, handling
      kubectl get events --sort-by=.metadata.creationTimestamp
      ```
 
+5. **Cloud Controller Manager (cloud-controller-manager)**:
+
+   - The **Cloud Controller Manager (CCM)** is responsible for integrating Kubernetes with cloud provider-specific services, such as load balancers, networking, and storage.
+   - It runs controllers that interact with the underlying cloud infrastructure, allowing Kubernetes to manage cloud resources dynamically.
+   - The key functions of the Cloud Controller Manager include:
+     - **Node Controller**: Manages nodes in a cloud environment, detecting and removing failed or unresponsive cloud-based instances.
+     - **Route Controller**: Configures networking routes in the cloud provider to enable pod communication across nodes.
+     - **Service Controller**: Handles cloud-based load balancers for Kubernetes services.
+     - **Persistent Volume Controller**: Manages cloud-based storage provisioning for persistent volumes.
+   - The CCM allows Kubernetes to be more cloud-agnostic by decoupling cloud-specific logic from the core components.
+   - **Command**: To check the cloud-controller-manager logs, use:
+     ```bash
+     kubectl logs -n kube-system cloud-controller-manager-<node-name>
+     ```
+
 ##### Worker Node Components
 
 The **Worker Nodes** are responsible for running the application workloads. They host the pods and communicate with the Master Node to maintain cluster health and report status.
